@@ -26,6 +26,10 @@
 #define PCC_PORTB (0x40065000u + 0x128u) //PCC_PORTB
 #define PCC_LPSPI0 (0x40065000u + 0xB0u) //SPI0
 #define PCC_LPSPI1 (0x40065000u + 0xB4u) //SPI1
+#define PORTB_PCR2 (0x4004A000u + 0x8u) //PORTB 2
+#define PORTB_PCR3 (0x4004A000u + 0xCu) //PORTB 3
+#define PORTB_PCR4 (0x4004A000u + 0x10u) //PORTB 4
+#define PORTB_PCR5 (0x4004A000u + 0x14u) //PORTB 5
 #define PORTB_PCR14 (0x4004A000u + 0x38u) //PORTB 14
 #define PORTB_PCR15 (0x4004A000u + 0x3Cu) //PORTB 15
 #define PORTB_PCR16 (0x4004A000u + 0x40u) //PORTB 16
@@ -73,6 +77,13 @@ typedef struct {
 #define LPSPI2_base_address (0x4002E000u)
 #define LPSPI2 ((LPSPI_Type *) LPSPI2_base_address)
 
+#define decode 0x09u
+#define intensity 0x0Au
+#define scan_limit 0x0Bu
+#define shut_down 0x0Cu
+#define display_test 0x0Fu
+#define first_digit 0x01u
+
 void SetOrClearBit(unsigned int *address, unsigned char position, unsigned char action);
 void SetOrClearMultiBit(unsigned int *address, unsigned char position, unsigned int mask, unsigned char action);
 void LEDConfig (void);
@@ -83,3 +94,5 @@ void ClkOutput(void);
 void SPIConfig(void);
 void SPISendChar(char c);
 void SPISendString (char string[]);
+void SPISendLED(unsigned int address, unsigned int data);
+void DisplayLetterLED(void);

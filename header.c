@@ -93,54 +93,44 @@ void ClkOutput(void)
 void SPIConfig(void)
 {
 	SetOrClearBit((unsigned int*) PCC_PORTB, 30u, SET_BIT); // PCC PORTC CGC
-	SetOrClearMultiBit((unsigned int*) PORTB_PCR14, 8u, 3u , SET_BIT); // Port B14: MUX = ALT3, LPSPI1_SCK
-	SetOrClearMultiBit((unsigned int*) PORTB_PCR15, 8u, 3u , SET_BIT); // Port B15: MUX = ALT3, LPSPI1_SIN
-	SetOrClearMultiBit((unsigned int*) PORTB_PCR16, 8u, 3u , SET_BIT); // Port B16: MUX = ALT3, LPSPI1_SOUT
-	SetOrClearMultiBit((unsigned int*) PORTB_PCR17, 8u, 3u , SET_BIT); // Port B17: MUX = ALT3, LPSPI1_PCS3
+	SetOrClearMultiBit((unsigned int*) PORTB_PCR2, 8u, 3u , SET_BIT); // Port B2: MUX = ALT3, LPSPI0_SCK
+	SetOrClearMultiBit((unsigned int*) PORTB_PCR3, 8u, 3u , SET_BIT); // Port B3: MUX = ALT3, LPSPI0_SIN
+	SetOrClearMultiBit((unsigned int*) PORTB_PCR4, 8u, 3u , SET_BIT); // Port B4: MUX = ALT3, LPSPI0_SOUT
+	SetOrClearMultiBit((unsigned int*) PORTB_PCR5, 8u, 3u , SET_BIT); // Port B5: MUX = ALT3, LPSPI0_PCS1
 	
-	SetOrClearMultiBit((unsigned int*) PCC_LPSPI1, 24u, 1u, SET_BIT); // PCC PCS
-	SetOrClearBit((unsigned int*) PCC_LPSPI1, 30u, SET_BIT); // PCC CGC
+	SetOrClearMultiBit((unsigned int*) PCC_LPSPI0, 24u, 1u, SET_BIT); //SPI PCC PCS
+	SetOrClearBit((unsigned int*) PCC_LPSPI0, 30u, SET_BIT); //SPI PCC CGC
 	
-//	LPSPI1->TCR |= (0b11<<27); // div by 8
-//	LPSPI1->CCR |= (8u <<0); // SCK Div
-//	
-//	LPSPI1->TCR &= ~(0b11<<30); // CPOL, CPHA = 0
-//	
-//	LPSPI1->TCR |= (7u<<0); // 8bit = FRAMZ + 1
-//	LPSPI1->TCR &=~ (1<<23); // LSBF MSB first
-//	
-//	LPSPI1->TCR |= (0b11<<24); // PCS 3
-//	
-//	LPSPI1->FCR &= ~(0b11<<16); // RXWATER = 0
-//	LPSPI1->FCR &= ~(0b11<<0); // TXWATER = 0
-//	LPSPI1->CFGR1 |= (1<<3); //  NOSTALL=0 FIFO underun occur
-
-//	LPSPI1->CFGR1 |= (1<<0); // Master mode
-//	LPSPI1->CR |= (1<<3); // Debug Enable
-//	
-//	LPSPI1->CR |= (1<<0); // Module Enable
-	LPSPI1->CFGR1 |= (1<<3); //  NOSTALL=0 FIFO underun occur
-	LPSPI1->CFGR1 |= (1<<0); // Master mode
+	LPSPI0->TCR = 0x09000007; // Cannot use each function to turn each bit on. Cannot find issue 
 	
-	LPSPI1->TCR = 0x1B000007;
+//	LPSPI0->TCR |= (0b001<<27); // Prescale div by 2
+	LPSPI0->CCR |= (2u <<0); // SCK Div (Div + 2)
+	
+//	LPSPI0->TCR &= ~(0b11<<30); // CPOL, CPHA = 0
+//	
+//	LPSPI0->TCR |= (7u<<0); // 8bit = FRAMZ + 1
+//	LPSPI0->TCR &=~ (1<<23); // LSBF MSB first
+//	
+//	LPSPI0->TCR |= (0b01<<24); // PCS 1
+	
+	LPSPI0->FCR &= ~(0b11<<16); // RXWATER = 0
+	LPSPI0->FCR &= ~(0b11<<0); // TXWATER = 0
+	LPSPI0->CFGR1 &= ~(1<<3); //  NOSTALL=0 Stall if Tx FIFO empty or Rx FIFO full
 
-	LPSPI1->CCR |= (8u <<0); // SCK Div
-	LPSPI1->FCR &= ~(0b11<<16); // RXWATER = 0
-	LPSPI1->FCR &= ~(0b11<<0); // TXWATER = 0
-
-	LPSPI1->CR |= (1<<3); // Debug Enable
-	LPSPI1->CR |= (1<<0); // Module Enable
+	LPSPI0->CFGR1 |= (1<<0); // Master mode
+	LPSPI0->CR |= (1<<3); // Debug Enable
+	
+	LPSPI0->CR |= (1<<0); // Module Enable
 }
 
 void SPISendChar(char c)
 {
-	if ((LPSPI1->SR) & (1<<0)) //Tx FIFO available 
+	if ((LPSPI0->SR) & (1<<0)) //Tx FIFO available 
 	{
-		LPSPI1->TDR = c; // send data
-		LPSPI1->SR |= (1<<0); //write 1 to clear
+		LPSPI0->TDR = c; // send data
+		LPSPI0->SR |= (1<<0); //write 1 to clear
 	}
 }
-
 
 void SPISendString (char data_string[])
 {
@@ -152,3 +142,27 @@ void SPISendString (char data_string[])
 	}
 }
 
+void SPISendLED(unsigned int address, unsigned int data)
+{
+	if ((LPSPI0->SR) & (1<<0)) //Tx FIFO available 
+	{
+		LPSPI0->TDR = address; // send data 'address'
+		LPSPI0->SR |= (1<<0); //write 1 to clear
+	}
+	
+	if ((LPSPI0->SR) & (1<<0)) //Tx FIFO available 
+	{
+		LPSPI0->TDR = data; // send data 'data'
+		LPSPI0->SR |= (1<<0); //write 1 to clear
+	}
+}
+
+void DisplayLetterLED(void)
+{
+	SPISendLED(decode, 0x00u);
+	SPISendLED(intensity, 0x0Au);
+	SPISendLED(scan_limit, 0x07u);
+	SPISendLED(shut_down, 0x01u);
+	SPISendLED(display_test, 0x00u);
+	SPISendLED(first_digit, 0x67u); // send 'H'
+}

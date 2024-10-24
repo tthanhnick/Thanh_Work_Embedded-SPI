@@ -13,13 +13,12 @@ int main(void)
 //	LEDConfig();
 
 	SPIConfig();
-	
+			
 	while(1)
 	{
-		SPISendChar('H'); //ex2
+//		SPISendChar('H'); //ex2
 //		SPISendString (string); //ex4
-
-
+		DisplayLetterLED(); //MAX7219 7 LED Segment 
 	}
 }
 
