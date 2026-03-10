@@ -13,6 +13,8 @@ int main(void)
 //	LEDConfig();
 
 	SPIConfig();
+
+	MAX7219Init(); // Initialize MAX7219 once before the loop
 			
 	while(1)
 	{
@@ -21,4 +23,3 @@ int main(void)
 		DisplayLetterLED(); //MAX7219 7 LED Segment 
 	}
 }
-
